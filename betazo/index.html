@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Betazo - Apostas Esportivas</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        /* Estilo para a fonte Inter */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #111827; /* bg-gray-900 */
+            color: #d1d5db; /* text-gray-300 */
+        }
+        /* Cores de Destaque */
+        .highlight-red {
+            color: #ef4444; /* red-500 */
+        }
+        .bg-highlight-red {
+            background-color: #ef4444; /* red-500 */
+        }
+        .hover\:bg-highlight-red-dark:hover {
+            background-color: #dc2626; /* red-600 */
+        }
+        /* Efeito de transição suave */
+        .transition-all {
+            transition: all 0.3s ease-in-out;
+        }
+        /* Estilo para o novo card de aposta */
+        .bet-card {
+            background-color: #1f2937; /* bg-gray-800 */
+            border: 1px solid #374151; /* border-gray-700 */
+        }
+        /* Estilo para o novo botão de odd */
+        .odd-button {
+            background-color: #374151; /* bg-gray-700 */
+            border: 1px solid #4b5563; /* border-gray-600 */
+            color: #f3f4f6; /* text-gray-100 */
+        }
+        .odd-button:hover {
+            background-color: #4b5563; /* bg-gray-600 */
+        }
+        /* Classe para odd selecionada */
+        .odd-button.selected {
+            background-color: #ef4444; /* red-500 */
+            color: #ffffff;
+            font-weight: 700;
+            border-color: #ef4444;
+        }
+        .odd-button.selected .odd-value {
+             color: #ffffff;
+        }
+        /* Esconder o spinner de input number */
+        input[type='number']::-webkit-inner-spin-button,
+        input[type='number']::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type='number'] {
+            -moz-appearance: textfield;
+        }
+        /* Estilos para as abas */
+        .tab-button.active {
+            border-bottom: 2px solid #ef4444;
+            color: #ef4444;
+            font-weight: 600;
+        }
+        /* Estilo para a notificação (toast) */
+        #toast {
+            transition: transform 0.5s ease-in-out, opacity 0.5s ease-in-out;
+        }
+    </style>
+</head>
+<body class="text-gray-300">
+
+    <!-- Tela de Carregamento/Autenticação -->
+    <div id="loading-overlay" class="fixed inset-0 bg-gray-900 bg-opacity-90 flex items-center justify-center z-[200]">
+        <div class="text-center text-white">
+            <svg class="animate-spin h-8 w-8 text-white mx-auto mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <p>Conectando e autenticando...</p>
+        </div>
+    </div>
+
+    <!-- Notificação (Toast) -->
+    <div id="toast" class="hidden fixed top-5 right-5 z-[100] p-4 rounded-lg shadow-lg text-white max-w-sm transform translate-x-full">
+        <p id="toast-message"></p>
+    </div>
+
+    <!-- Cabeçalho -->
+    <header class="bg-gray-900 sticky top-0 z-30">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center space-x-8">
+                    <a href="#" class="flex items-center flex-shrink-0">
+                        <img src="./images/logo.png" alt="Logo Betazo" class="h-9">
+                    </a>
+                    <nav class="hidden md:flex items-center space-x-6 text-sm font-semibold">
+                        <a href="#" class="text-gray-300 hover:text-white transition-colors">APOSTAS ESPORTIVAS</a>
+                        <a href="#" class="text-red-500 hover:text-red-400 transition-colors">APOSTAS AO VIVO</a>
+                        <a href="#" class="text-gray-300 hover:text-white transition-colors">CASSINO</a>
+                        <a href="#" class="text-gray-300 hover:text-white transition-colors">CASSINO AO VIVO</a>
+                        <a href="#" class="text-gray-300 hover:text-white transition-colors">PROMOÇÕES</a>
+                    </nav>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div id="user-info" class="text-xs text-gray-500 hidden">Seu ID: <span id="user-id" class="font-mono"></span></div>
+                    <button onclick="openMyBetsModal()" class="text-gray-400 hover:text-white transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
+                    </button>
+                    <div class="bg-gray-800 p-2 rounded-md flex items-center space-x-3">
+                        <div class="text-white text-right">
+                            <div id="balance-display" class="font-bold text-sm">R$ 1.000,00</div>
+                        </div>
+                        <button class="bg-highlight-red hover:bg-highlight-red-dark text-white font-bold text-xs py-2 px-3 rounded-md transition-all">
+                            DEPÓSITO
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Conteúdo Principal -->
+    <main class="container mx-auto p-4 lg:p-6">
+        <div class="w-full max-w-4xl mx-auto">
+            <!-- Banner de Luta -->
+            <div class="rounded-lg mb-8 shadow-2xl overflow-hidden">
+                <img src="./images/banner.png" alt="Banner da Luta Principal: UFS Sitazo" class="w-full h-auto">
+            </div>
+
+            <!-- Destaques -->
+            <h2 class="text-3xl font-bold mb-6 text-white border-l-4 border-red-500 pl-4">Destaques do Dia</h2>
+            <div class="space-y-6">
+                <!-- Card de Aposta MMA 1 -->
+                <div id="mma1" class="bet-card rounded-lg p-4 shadow-lg transition-all" data-event-id="mma1">
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="text-sm text-gray-400">MMA - Peso Pena</span>
+                        <span class="text-sm text-gray-400">Sábado - 22:00</span>
+                    </div>
+                    <div class="flex items-center justify-between" data-event-name='Caio "Jones" Campos vs Rafael "Fuinha" Bugallo' data-market-name="Vencedor da Luta">
+                        <button class="odd-button p-4 rounded-lg text-left w-2/5" onclick="toggleOdd(this)" data-selection='Caio "Jones" Campos' data-odd="1.85">
+                            <span class="font-bold text-xl block">Caio "Jones" Campos</span>
+                            <span class="font-black text-3xl odd-value text-white">1.85</span>
+                        </button>
+                        <div class="text-gray-500 text-2xl font-black">VS</div>
+                        <button class="odd-button p-4 rounded-lg text-right w-2/5" onclick="toggleOdd(this)" data-selection='Rafael "Fuinha" Bugallo' data-odd="2.05">
+                             <span class="font-bold text-xl block">Rafael "Fuinha" Bugallo</span>
+                             <span class="font-black text-3xl odd-value text-white">2.05</span>
+                        </button>
+                    </div>
+                    <div class="text-center mt-4">
+                        <button onclick="openCommunityBetsModal('mma1')" class="text-sm text-red-400 hover:text-red-300 font-semibold">Ver Apostas da Comunidade</button>
+                    </div>
+                </div>
+                
+                <!-- Card de Aposta MMA 2 -->
+                <div class="bet-card rounded-lg p-4 shadow-lg transition-all" data-event-id="mma2">
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="text-sm text-gray-400">MMA - Peso Médio</span>
+                        <span class="text-sm text-gray-400">Sábado - 21:00</span>
+                    </div>
+                    <div class="flex items-center justify-between" data-event-name='Pedro “Monkeypox” Poleze Vs Otavio “The Pincher” Passos' data-market-name="Vencedor da Luta">
+                        <button class="odd-button p-4 rounded-lg text-left w-2/5" onclick="toggleOdd(this)" data-selection='Pedro “Monkeypox” Poleze' data-odd="1.70">
+                            <span class="font-bold text-lg block">Pedro “Monkeypox” Poleze</span>
+                            <span class="font-black text-3xl odd-value text-white">1.70</span>
+                        </button>
+                        <div class="text-gray-400 text-2xl font-black">VS</div>
+                        <button class="odd-button p-4 rounded-lg text-right w-2/5" onclick="toggleOdd(this)" data-selection='Otavio “The Pincher” Passos' data-odd="2.20">
+                             <span class="font-bold text-lg block">Otavio “The Pincher” Passos</span>
+                             <span class="font-black text-3xl odd-value text-white">2.20</span>
+                        </button>
+                    </div>
+                     <div class="text-center mt-4">
+                        <button onclick="openCommunityBetsModal('mma2')" class="text-sm text-red-400 hover:text-red-300 font-semibold">Ver Apostas da Comunidade</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal Flutuante do Cupom de Aposta -->
+    <div id="floating-bet-slip-button" class="hidden fixed bottom-5 right-5 z-40 cursor-pointer" onclick="openBetSlipModal()">
+        <div class="bg-highlight-red text-white p-4 rounded-lg shadow-lg flex items-center space-x-3">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" /></svg>
+            <div id="floating-bet-slip-info">
+                <span id="bet-count" class="font-bold">0</span>
+                <span>Apostas</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal do Cupom de Aposta -->
+    <div id="bet-slip-modal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
+        <div class="bg-gray-800 text-gray-200 rounded-lg shadow-xl w-full max-w-lg max-h-[90vh] flex flex-col">
+            <div class="flex justify-between items-center p-4 border-b border-gray-700">
+                <h2 class="text-lg font-bold">Cupom de Aposta</h2>
+                <button onclick="closeBetSlipModal()" class="text-gray-400 hover:text-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+            </div>
+            <div class="flex-grow overflow-y-auto">
+                <div class="flex border-b border-gray-700">
+                    <button class="tab-button active flex-1 py-2 text-sm text-center" onclick="switchTab(this, 'simples', 'bet-slip-modal')">Simples</button>
+                    <button class="tab-button flex-1 py-2 text-sm text-center text-gray-500" onclick="switchTab(this, 'multiplas', 'bet-slip-modal')">Múltiplas</button>
+                </div>
+                <div id="tab-content-simples">
+                    <div id="bet-slip-items" class="space-y-3 p-4"></div>
+                </div>
+                <div id="tab-content-multiplas" class="hidden p-4 text-center text-gray-500 text-sm">Apostas múltiplas ainda não implementado.</div>
+            </div>
+            <div id="bet-slip-footer" class="mt-auto p-4 border-t border-gray-700 bg-gray-900 hidden">
+                <div class="flex justify-between items-center text-lg">
+                    <span class="font-semibold">Ganhos Potenciais:</span>
+                    <span id="potential-winnings" class="font-bold text-red-500">R$ 0,00</span>
+                </div>
+                <button onclick="placeBets()" class="w-full mt-4 bg-highlight-red hover:bg-highlight-red-dark text-white font-bold py-3 px-5 rounded-lg transition-all">
+                    Apostar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Minhas Apostas -->
+    <div id="my-bets-modal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
+        <div class="bg-gray-800 text-gray-200 rounded-lg shadow-xl w-full max-w-lg max-h-[90vh] flex flex-col">
+            <div class="flex justify-between items-center p-4 border-b border-gray-700">
+                <h2 class="text-lg font-bold">Minhas Apostas</h2>
+                <button onclick="closeMyBetsModal()" class="text-gray-400 hover:text-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+            </div>
+            <div class="flex-grow overflow-y-auto">
+                <div class="flex border-b border-gray-700">
+                    <button class="tab-button active flex-1 py-2 text-sm text-center" onclick="switchTab(this, 'open', 'my-bets-modal')">Em Aberto</button>
+                    <button class="tab-button flex-1 py-2 text-sm text-center text-gray-500" onclick="switchTab(this, 'settled', 'my-bets-modal')">Resolvidas</button>
+                </div>
+                <div id="my-bets-open-content">
+                    <div id="my-bets-list-open" class="space-y-3 p-4"></div>
+                </div>
+                <div id="my-bets-settled-content" class="hidden">
+                    <div id="my-bets-list-settled" class="space-y-3 p-4"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Apostas da Comunidade -->
+    <div id="community-bets-modal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
+        <div class="bg-gray-800 text-gray-200 rounded-lg shadow-xl w-full max-w-lg max-h-[90vh] flex flex-col">
+            <div class="flex justify-between items-center p-4 border-b border-gray-700">
+                <h2 id="community-modal-title" class="text-lg font-bold">Apostas da Comunidade</h2>
+                <button onclick="closeCommunityBetsModal()" class="text-gray-400 hover:text-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+            </div>
+            <div id="community-bets-list" class="flex-grow overflow-y-auto p-4 space-y-2">
+                <!-- Bets will be rendered here -->
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Firebase SDK -->
+    <script src="firebase-config.js"></script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, query, where, onSnapshot, doc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // --- Variáveis Globais de Configuração e Estado ---
+        // A variável 'firebaseConfig' já existe porque a importámos do ficheiro acima.
+        const appId = firebaseConfig.projectId; // Usamos o ID do projeto como ID da App
+        
+        let auth, db, userId;
+        let betSlip = {};
+        let myPlacedBets = []; // Array local para as apostas do usuário
+        let balance = 1000;
+        let unsubscribeCommunityBets; // Para parar de ouvir as apostas da comunidade
+
+        // --- Inicialização do Firebase ---
+        try {
+            if (!firebaseConfig || Object.keys(firebaseConfig).length === 0) {
+                throw new Error("Firebase config is missing. App cannot start.");
+            }
+            const app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
+            console.log("Firebase Initialized Successfully");
+            setupAuth();
+        } catch (e) {
+            console.error("Error initializing Firebase:", e);
+            const loadingOverlay = document.getElementById('loading-overlay');
+            loadingOverlay.innerHTML = `<div class="text-center text-red-400"><p class="font-bold">Erro Crítico</p><p>Não foi possível conectar ao servidor. Por favor, recarregue a página.</p><p class="text-xs text-gray-500 mt-2">${e.message}</p></div>`;
+        }
+
+        // --- Autenticação ---
+        function setupAuth() {
+            onAuthStateChanged(auth, user => {
+                if (user) {
+                    userId = user.uid;
+                    document.getElementById('user-id').textContent = userId.substring(0, 8);
+                    document.getElementById('user-info').classList.remove('hidden');
+                    console.log("User is signed in with UID:", userId);
+                    document.getElementById('loading-overlay').classList.add('hidden');
+                } else {
+                    signInAnonymously(auth).catch(error => {
+                        console.error("Anonymous sign-in failed:", error);
+                        const loadingOverlay = document.getElementById('loading-overlay');
+                        loadingOverlay.innerHTML = `<div class="text-center text-red-400"><p class="font-bold">Erro de Autenticação</p><p>Não foi possível obter uma ID de usuário. Verifique sua conexão e recarregue a página.</p></div>`;
+                    });
+                }
+            });
+        }
+
+        // --- Funções de UI (Notificações, Modals, etc.) ---
+        window.showToast = (message, type = 'success') => {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toast-message');
+            toastMessage.textContent = message;
+            toast.className = `fixed top-5 right-5 z-[100] p-4 rounded-lg shadow-lg text-white max-w-sm transform translate-x-0 opacity-100 ${type === 'error' ? 'bg-red-500' : 'bg-green-500'}`;
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-x-full');
+            }, 3000);
+        };
+
+        window.updateBalanceDisplay = () => {
+            document.getElementById('balance-display').textContent = `R$ ${balance.toFixed(2)}`;
+        };
+        
+        window.openBetSlipModal = () => document.getElementById('bet-slip-modal').classList.remove('hidden');
+        window.closeBetSlipModal = () => document.getElementById('bet-slip-modal').classList.add('hidden');
+        
+        window.openMyBetsModal = () => {
+            renderMyBets();
+            document.getElementById('my-bets-modal').classList.remove('hidden');
+        };
+        window.closeMyBetsModal = () => document.getElementById('my-bets-modal').classList.add('hidden');
+        
+        window.openCommunityBetsModal = (eventId) => {
+            const eventCard = document.querySelector(`.bet-card[data-event-id="${eventId}"]`);
+            const eventName = eventCard.querySelector('[data-event-name]').dataset.eventName;
+            document.getElementById('community-modal-title').textContent = `Apostas para: ${eventName}`;
+            
+            const communityBetsList = document.getElementById('community-bets-list');
+            communityBetsList.innerHTML = '<p>Carregando apostas...</p>';
+            document.getElementById('community-bets-modal').classList.remove('hidden');
+
+            const betsRef = collection(db, `artifacts/${appId}/public/data/communityBets`);
+            const q = query(betsRef, where("eventId", "==", eventId));
+
+            if (unsubscribeCommunityBets) unsubscribeCommunityBets();
+
+            unsubscribeCommunityBets = onSnapshot(q, (snapshot) => {
+                communityBetsList.innerHTML = '';
+                if(snapshot.empty) {
+                    communityBetsList.innerHTML = '<p class="text-gray-400">Ninguém apostou neste evento ainda. Seja o primeiro!</p>';
+                    return;
+                }
+                snapshot.forEach((doc) => {
+                    const bet = doc.data();
+                    const bettorId = bet.userId === userId ? 'Você' : `Usuário...${bet.userId.substring(bet.userId.length - 4)}`;
+                    const bettorColor = bet.userId === userId ? 'text-red-400' : 'text-gray-400';
+                    communityBetsList.innerHTML += `
+                        <div class="bg-gray-700 p-2 rounded-md text-sm flex justify-between">
+                            <span class="${bettorColor}">${bettorId} apostou em</span>
+                            <span class="font-bold text-white">${bet.selection}</span>
+                        </div>
+                    `;
+                });
+            }, error => {
+                console.error("Error fetching community bets:", error);
+                communityBetsList.innerHTML = '<p class="text-red-400">Erro ao carregar apostas.</p>';
+            });
+        };
+        window.closeCommunityBetsModal = () => {
+            if (unsubscribeCommunityBets) unsubscribeCommunityBets();
+            document.getElementById('community-bets-modal').classList.add('hidden');
+        };
+
+        // --- Lógica de Apostas ---
+        window.toggleOdd = (buttonElement) => {
+            const parentCard = buttonElement.closest('.bet-card');
+            const eventId = parentCard.dataset.eventId;
+            const isSelected = buttonElement.classList.contains('selected');
+            const eventContainer = parentCard.querySelector('[data-event-name]');
+            
+            const otherButton = [...parentCard.querySelectorAll('.odd-button')].find(btn => btn !== buttonElement);
+            if (otherButton) otherButton.classList.remove('selected');
+
+            if (isSelected) {
+                buttonElement.classList.remove('selected');
+                delete betSlip[eventId];
+            } else {
+                buttonElement.classList.add('selected');
+                betSlip[eventId] = {
+                    event: eventContainer.dataset.eventName,
+                    market: eventContainer.dataset.marketName,
+                    selection: buttonElement.dataset.selection,
+                    odd: parseFloat(buttonElement.dataset.odd),
+                    stake: 0
+                };
+            }
+            updateBetSlipUI();
+        };
+
+        window.removeFromSlip = (eventId) => {
+            delete betSlip[eventId];
+            const eventCard = document.querySelector(`.bet-card[data-event-id="${eventId}"]`);
+            if (eventCard) {
+                eventCard.querySelector('.odd-button.selected')?.classList.remove('selected');
+            }
+            updateBetSlipUI();
+        };
+
+        window.updateCalculations = () => {
+            let totalWinnings = 0;
+            const selections = Object.values(betSlip);
+            if (selections.length > 0) {
+                selections.forEach(bet => {
+                    totalWinnings += bet.stake * bet.odd;
+                });
+            }
+            document.querySelector('#bet-slip-modal #potential-winnings').textContent = `R$ ${totalWinnings.toFixed(2)}`;
+        };
+
+        window.updateSingleStake = (eventId, stake) => {
+            if (betSlip[eventId]) {
+                betSlip[eventId].stake = parseFloat(stake) || 0;
+                updateCalculations();
+            }
+        };
+        
+        window.addQuickStake = (eventId, amount) => {
+            const input = document.getElementById(`stake-${eventId}`);
+            const currentStake = parseFloat(input.value) || 0;
+            const newStake = currentStake + amount;
+            input.value = newStake.toFixed(2);
+            updateSingleStake(eventId, newStake);
+        };
+
+        window.updateFloatingButton = () => {
+            const button = document.getElementById('floating-bet-slip-button');
+            const betCountEl = document.getElementById('bet-count');
+            const betCount = Object.keys(betSlip).length;
+            betCountEl.textContent = betCount;
+            button.style.display = betCount > 0 ? 'flex' : 'none';
+            if (betCount === 0) closeBetSlipModal();
+        };
+
+        window.updateBetSlipUI = () => {
+            const itemsContainer = document.querySelector('#bet-slip-modal #bet-slip-items');
+            const footer = document.querySelector('#bet-slip-modal #bet-slip-footer');
+            itemsContainer.innerHTML = ''; 
+            
+            const selections = Object.entries(betSlip);
+            if (selections.length === 0) {
+                itemsContainer.innerHTML = `<p class="text-gray-400 text-sm text-center py-4">Selecione uma aposta para começar.</p>`;
+                footer.style.display = 'none';
+            } else {
+                footer.style.display = 'block';
+                selections.forEach(([id, bet]) => {
+                    const itemHTML = `
+                        <div class="bet-slip-item bg-gray-700 p-3 rounded-md">
+                            <div class="flex justify-between items-start">
+                                <div><p class="font-bold text-sm text-white">${bet.selection}</p><p class="text-xs text-gray-400">${bet.market} - ${bet.event}</p></div>
+                                <div class="flex items-center"><span class="font-bold text-red-500 mr-3">${bet.odd.toFixed(2)}</span><button onclick="removeFromSlip('${id}')" class="text-gray-400 hover:text-white"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button></div>
+                            </div>
+                            <div class="mt-2">
+                                <div class="flex items-center space-x-1"><input type="number" id="stake-${id}" class="w-full p-2 text-sm bg-gray-800 border border-gray-600 rounded-md text-white" placeholder="Valor" oninput="updateSingleStake('${id}', this.value)"><button onclick="addQuickStake('${id}', 10)" class="text-xs bg-gray-600 hover:bg-gray-500 rounded px-2 py-1">+10</button><button onclick="addQuickStake('${id}', 50)" class="text-xs bg-gray-600 hover:bg-gray-500 rounded px-2 py-1">+50</button></div>
+                            </div>
+                        </div>`;
+                    itemsContainer.innerHTML += itemHTML;
+                });
+                updateCalculations();
+            }
+            updateFloatingButton();
+        };
+
+        window.placeBets = async () => {
+            if (!userId) return showToast('Erro de autenticação. Tente recarregar a página.', 'error');
+            
+            const selections = Object.values(betSlip);
+            const totalStake = selections.reduce((sum, bet) => sum + bet.stake, 0);
+
+            if (totalStake <= 0) return showToast('Por favor, insira um valor para apostar.', 'error');
+            if (totalStake > balance) return showToast('Saldo insuficiente.', 'error');
+
+            balance -= totalStake;
+            updateBalanceDisplay();
+
+            const communityBetsRef = collection(db, `artifacts/${appId}/public/data/communityBets`);
+            
+            for (const bet of selections) {
+                if (bet.stake > 0) {
+                    const betId = `bet-${Date.now()}-${Math.random()}`;
+                    const eventId = Object.keys(betSlip).find(key => betSlip[key] === bet);
+                    
+                    // Adiciona a aposta na lista local do usuário
+                    myPlacedBets.push({
+                        ...bet,
+                        id: betId,
+                        eventId: eventId,
+                        status: 'open',
+                        potentialWinnings: bet.stake * bet.odd,
+                        cashedOutAmount: 0
+                    });
+
+                    // Adiciona a aposta pública (sem valor) para a comunidade
+                    try {
+                        await addDoc(communityBetsRef, {
+                            userId: userId,
+                            eventId: eventId,
+                            selection: bet.selection,
+                            timestamp: new Date()
+                        });
+                    } catch (e) {
+                        console.error("Error adding community bet: ", e);
+                        // Idealmente, a transação seria revertida, mas por simplicidade, apenas notificamos.
+                    }
+                }
+            }
+
+            showToast('Aposta(s) realizada(s) com sucesso!', 'success');
+            
+            const eventIds = Object.keys(betSlip);
+            betSlip = {};
+            eventIds.forEach(id => {
+                const eventCard = document.querySelector(`.bet-card[data-event-id="${id}"]`);
+                eventCard?.querySelector('.odd-button.selected')?.classList.remove('selected');
+            });
+            updateBetSlipUI();
+        };
+
+        window.renderMyBets = () => {
+            const openList = document.getElementById('my-bets-list-open');
+            const settledList = document.getElementById('my-bets-list-settled');
+            openList.innerHTML = '';
+            settledList.innerHTML = '';
+
+            const openBets = myPlacedBets.filter(b => b.status === 'open');
+            const settledBets = myPlacedBets.filter(b => b.status === 'settled');
+
+            if (openBets.length === 0) openList.innerHTML = '<p class="text-gray-400 text-sm text-center py-4">Nenhuma aposta em aberto.</p>';
+            openBets.forEach(bet => {
+                const cashOutValue = bet.stake * 0.75;
+                openList.innerHTML += `
+                    <div class="bg-gray-700 p-3 rounded-md">
+                        <p class="font-bold text-white">${bet.selection} <span class="text-red-500">@${bet.odd.toFixed(2)}</span></p>
+                        <p class="text-xs text-gray-400">${bet.event}</p>
+                        <div class="flex justify-between items-center mt-2 text-sm">
+                            <span>Aposta: <span class="font-semibold">R$ ${bet.stake.toFixed(2)}</span></span>
+                            <span>Ganhos Pot.: <span class="font-semibold">R$ ${bet.potentialWinnings.toFixed(2)}</span></span>
+                        </div>
+                        <button onclick="cashOut('${bet.id}')" class="w-full mt-3 bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 rounded-lg">Cash Out R$ ${cashOutValue.toFixed(2)}</button>
+                    </div>`;
+            });
+
+            if (settledBets.length === 0) settledList.innerHTML = '<p class="text-gray-400 text-sm text-center py-4">Nenhuma aposta resolvida.</p>';
+            settledBets.forEach(bet => {
+                settledList.innerHTML += `
+                    <div class="bg-gray-700 p-3 rounded-md opacity-70">
+                        <p class="font-bold text-white">${bet.selection} <span class="text-red-500">@${bet.odd.toFixed(2)}</span></p>
+                        <p class="text-xs text-gray-400">${bet.event}</p>
+                        <div class="flex justify-between items-center mt-2 text-sm">
+                            <span>Aposta: <span class="font-semibold">R$ ${bet.stake.toFixed(2)}</span></span>
+                            <span class="font-bold text-blue-400">Encerrada: R$ ${bet.cashedOutAmount.toFixed(2)}</span>
+                        </div>
+                    </div>`;
+            });
+        };
+        
+        window.cashOut = (betId) => {
+            const betIndex = myPlacedBets.findIndex(b => b.id === betId);
+            if (betIndex === -1) return;
+            
+            const bet = myPlacedBets[betIndex];
+            const cashOutValue = bet.stake * 0.75;
+            
+            balance += cashOutValue;
+            updateBalanceDisplay();
+            
+            myPlacedBets[betIndex].status = 'settled';
+            myPlacedBets[betIndex].cashedOutAmount = cashOutValue;
+            
+            showToast(`Cash out de R$ ${cashOutValue.toFixed(2)} realizado!`, 'success');
+            renderMyBets();
+        };
+
+        window.switchTab = (button, tabName, modalId) => {
+            const modal = document.getElementById(modalId);
+            modal.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+
+            if (modalId === 'my-bets-modal') {
+                document.getElementById('my-bets-open-content').style.display = tabName === 'open' ? 'block' : 'none';
+                document.getElementById('my-bets-settled-content').style.display = tabName === 'settled' ? 'block' : 'none';
+            } else {
+                document.getElementById('tab-content-simples').style.display = tabName === 'simples' ? 'block' : 'none';
+                document.getElementById('tab-content-multiplas').style.display = tabName === 'multiplas' ? 'block' : 'none';
+            }
+        };
+        
+        // --- Inicialização da UI ---
+        updateBalanceDisplay();
+        updateBetSlipUI();
+    </script>
+</body>
+</html>
