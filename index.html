@@ -74,6 +74,22 @@
         #toast {
             transition: transform 0.5s ease-in-out, opacity 0.5s ease-in-out;
         }
+        /* Estilos do Carrossel */
+        .carousel-item {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transition: opacity 0.7s ease-in-out;
+            visibility: hidden;
+        }
+        .carousel-item.active {
+            opacity: 1;
+            visibility: visible;
+            position: relative;
+        }
     </style>
 </head>
 <body class="text-gray-300">
@@ -105,8 +121,8 @@
                 </div>
                 
                 <nav class="hidden md:flex items-center space-x-6 text-sm font-semibold">
-                    <a href="#" class="text-gray-300 hover:text-white transition-colors">APOSTAS ESPORTIVAS</a>
-                    <a href="#" class="text-red-500 hover:text-red-400 transition-colors">AO VIVO</a>
+                    <a href="#" class="text-gray-300 hover:text-white transition-colors">APOSTAS</a>
+                    <a href="#" class="text-red-500 hover:text-red-400 transition-colors">ULTIMATE FIGHT SITAZO</a>
                     <a href="#" class="text-gray-300 hover:text-white transition-colors">CASSINO</a>
                 </nav>
 
@@ -156,9 +172,23 @@
     <!-- Conteúdo Principal -->
     <main class="container mx-auto p-4 lg:p-6">
         <div class="w-full max-w-4xl mx-auto">
-            <!-- Banner de Luta -->
-            <div class="rounded-lg mb-8 shadow-2xl overflow-hidden">
-                <img src="./images/bannerl1.png" alt="Banner da Luta Principal: UFS Sitazo" class="w-full h-auto">
+            <!-- Carrossel de Banners -->
+            <div id="banner-carousel" class="relative rounded-lg mb-8 shadow-2xl overflow-hidden">
+                <div class="carousel-item active">
+                    <img src="./images/bannerl1.png" alt="Banner da Luta Principal: UFS Sitazo" class="w-full h-auto">
+                </div>
+                <div class="carousel-item">
+                    <img src="./images/bannerl3.png" alt="Banner da Luta Jones vs Fuinha" class="w-full h-auto">
+                </div>
+                <!-- Botões de Navegação do Carrossel -->
+                <button onclick="moveSlide(-1)" class="absolute top-1/2 left-2 md:left-4 -translate-y-1/2 bg-black bg-opacity-30 hover:bg-opacity-50 text-white p-2 rounded-full z-10">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+                </button>
+                <button onclick="moveSlide(1)" class="absolute top-1/2 right-2 md:right-4 -translate-y-1/2 bg-black bg-opacity-30 hover:bg-opacity-50 text-white p-2 rounded-full z-10">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+                </button>
+                <!-- Indicadores do Carrossel -->
+                <div id="carousel-dots" class="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2 z-10"></div>
             </div>
 
             <!-- Destaques -->
@@ -168,17 +198,17 @@
                 <div id="mma1" class="bet-card rounded-lg p-4 shadow-lg transition-all" data-event-id="mma1">
                     <div class="flex items-center justify-between mb-4">
                         <span class="text-sm text-gray-400">MMA - Peso Pena</span>
-                        <span class="text-sm text-gray-400">Domingo - 00:00</span>
+                        <span class="text-sm text-gray-400">Sábado - 22:00</span>
                     </div>
                     <div class="flex items-center justify-between" data-event-name='Caio "Jones" Campos vs Rafael "Fuinha" Bugallo' data-market-name="Vencedor da Luta">
-                        <button class="odd-button p-3 md:p-4 rounded-lg text-left w-2/5" onclick="toggleOdd(this)" data-selection='Caio "Jones" Campos' data-odd="2.15">
+                        <button class="odd-button p-3 md:p-4 rounded-lg text-left w-2/5" onclick="toggleOdd(this)" data-selection='Caio "Jones" Campos' data-odd="1.85">
                             <span class="font-bold text-base md:text-xl block">Caio "Jones" Campos</span>
-                            <span class="font-black text-2xl md:text-3xl odd-value text-white">2.15</span>
+                            <span class="font-black text-2xl md:text-3xl odd-value text-white">1.85</span>
                         </button>
                         <div class="text-gray-500 text-lg md:text-2xl font-black px-1">VS</div>
-                        <button class="odd-button p-3 md:p-4 rounded-lg text-right w-2/5" onclick="toggleOdd(this)" data-selection='Rafael "Fuinha" Bugallo' data-odd="2.15">
+                        <button class="odd-button p-3 md:p-4 rounded-lg text-right w-2/5" onclick="toggleOdd(this)" data-selection='Rafael "Fuinha" Bugallo' data-odd="2.05">
                              <span class="font-bold text-base md:text-xl block">Rafael "Fuinha" Bugallo</span>
-                             <span class="font-black text-2xl md:text-3xl odd-value text-white">2.15</span>
+                             <span class="font-black text-2xl md:text-3xl odd-value text-white">2.05</span>
                         </button>
                     </div>
                     <div class="text-center mt-4">
@@ -189,18 +219,18 @@
                 <!-- Card de Aposta MMA 2 -->
                 <div class="bet-card rounded-lg p-4 shadow-lg transition-all" data-event-id="mma2">
                     <div class="flex items-center justify-between mb-4">
-                        <span class="text-sm text-gray-400">MMA - Peso Pena</span>
-                        <span class="text-sm text-gray-400">Domingo - 22:00</span>
+                        <span class="text-sm text-gray-400">MMA - Peso Médio</span>
+                        <span class="text-sm text-gray-400">Sábado - 21:00</span>
                     </div>
                     <div class="flex items-center justify-between" data-event-name='Pedro “Monkeypox” Poleze Vs Otavio “The Pincher” Passos' data-market-name="Vencedor da Luta">
-                        <button class="odd-button p-3 md:p-4 rounded-lg text-left w-2/5" onclick="toggleOdd(this)" data-selection='Pedro “Monkeypox” Poleze' data-odd="2.22">
+                        <button class="odd-button p-3 md:p-4 rounded-lg text-left w-2/5" onclick="toggleOdd(this)" data-selection='Pedro “Monkeypox” Poleze' data-odd="1.70">
                             <span class="font-bold text-sm md:text-lg block">Pedro “Monkeypox” Poleze</span>
-                            <span class="font-black text-2xl md:text-3xl odd-value text-white">2.22</span>
+                            <span class="font-black text-2xl md:text-3xl odd-value text-white">1.70</span>
                         </button>
                         <div class="text-gray-400 text-lg md:text-2xl font-black px-1">VS</div>
-                        <button class="odd-button p-3 md:p-4 rounded-lg text-right w-2/5" onclick="toggleOdd(this)" data-selection='Otavio “The Pincher” Passos' data-odd="2.22">
+                        <button class="odd-button p-3 md:p-4 rounded-lg text-right w-2/5" onclick="toggleOdd(this)" data-selection='Otavio “The Pincher” Passos' data-odd="2.20">
                              <span class="font-bold text-sm md:text-lg block">Otavio “The Pincher” Passos</span>
-                             <span class="font-black text-2xl md:text-3xl odd-value text-white">2.22</span>
+                             <span class="font-black text-2xl md:text-3xl odd-value text-white">2.20</span>
                         </button>
                     </div>
                      <div class="text-center mt-4">
@@ -352,6 +382,38 @@
             mobileMenuButton.addEventListener('click', () => {
                 mobileMenu.classList.toggle('hidden');
             });
+
+            // --- Lógica do Carrossel ---
+            let slideIndex = 0;
+            const slides = document.querySelectorAll('.carousel-item');
+            const dotsContainer = document.getElementById('carousel-dots');
+
+            slides.forEach((_, i) => {
+                const dot = document.createElement('button');
+                dot.classList.add('w-2', 'h-2', 'md:w-3', 'md:h-3', 'rounded-full', 'transition-all');
+                dot.setAttribute('onclick', `showSlide(${i})`);
+                dotsContainer.appendChild(dot);
+            });
+            const dots = dotsContainer.querySelectorAll('button');
+
+            function showSlide(n) {
+                slideIndex = (n + slides.length) % slides.length;
+                slides.forEach((slide, i) => {
+                    slide.classList.toggle('active', i === slideIndex);
+                });
+                dots.forEach((dot, i) => {
+                    dot.classList.toggle('bg-white', i === slideIndex);
+                    dot.classList.toggle('bg-gray-500', i !== slideIndex);
+                });
+            }
+            window.showSlide = showSlide; // Expor a função para o onclick
+
+            window.moveSlide = (n) => {
+                showSlide(slideIndex + n);
+            };
+
+            showSlide(0);
+            setInterval(() => moveSlide(1), 5000);
 
             // --- Funções de UI ---
             window.showToast = (message, type = 'success') => {
